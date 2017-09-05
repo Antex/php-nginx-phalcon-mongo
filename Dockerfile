@@ -2,6 +2,8 @@ FROM ubuntu:latest
 
 MAINTAINER Akkapong Kajornwongwattana<akkapong.kaj@ascendcorp.com>
 
+USER root
+
 # Keep upstart from complaining
 RUN dpkg-divert --local --rename --add /sbin/initctl && \
 ln -sf /bin/true /sbin/initctl

@@ -6,7 +6,7 @@ MAINTAINER Akkapong Kajornwongwattana<akkapong.kaj@ascendcorp.com>
 RUN dpkg-divert --local --rename --add /sbin/initctl && \
 ln -sf /bin/true /sbin/initctl
 
-RUN echo "extension=mongodb.so" > /etc/php/mo
+RUN echo "extension=mongodb.so" > /etc/php/mods-available/mongo.ini
 
 # Install PHP 7.0 and some modules
 RUN apt-get update && \

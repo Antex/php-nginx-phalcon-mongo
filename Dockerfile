@@ -1,72 +1,77 @@
-FROM ubuntu:latest 
+FROM ubuntu:16.04
 
 MAINTAINER Akkapong Kajornwongwattana<akkapong.kaj@ascendcorp.com>
 
-USER root
+#Install
+RUN apt-get update && apt-get install -y \
+git \
+nginx \
+php7.0-fpm \
+php7.0-cli \
+php7.0-gd \
+curl \
+vim \
+wget \
+php7.0-mysql \
+php7.0-curl \
+php7.0-intl \
+php-pear \
+php7.0-mcrypt \
+php-memcache 
 
-# Keep upstart from complaining
-RUN dpkg-divert --local --rename --add /sbin/initctl && \
-ln -sf /bin/true /sbin/initctl
 
-COPY files/mongo.ini /etc/php/mods-available/mongo.ini
+#Packages for phalcon instalation   
+RUN apt-get install -y gcc make re2c libpcre3-dev php7.0-dev build-essential  php7.0-zip
 
-# Install PHP 7.0 and some modules
+#Install composer
+RUN curl -sS http://getcomposer.org/installer | php
+RUN mv composer.phar /usr/local/bin/composer
+
+#Install zephir
+RUN composer global require "phalcon/zephir:dev-master"
+
+#Install phalcon dev tool 
+RUN composer require "phalcon/devtools" -d /usr/local/bin/
+RUN ln -s /usr/local/bin/vendor/phalcon/devtools/phalcon.php /usr/bin/phalcon
+
+#Install phalconphp with php7
+RUN git clone https://github.com/phalcon/cphalcon.git -b 2.1.x --single-branch
+
+#Building Phalcon
+RUN cd cphalcon && ~/.composer/vendor/bin/zephir build --backend=ZendEngine3
+RUN echo "extension=phalcon.so" >> /etc/php/7.0/fpm/conf.d/20-phalcon.ini
+RUN echo "extension=phalcon.so" >> /etc/php/7.0/cli/conf.d/20-phalcon.ini
+
+#Re-Builging
+RUN ./cphalcon/ext/configure
+RUN make
+RUN make install
+
+# Install Mongodb
 RUN apt-get update && \
 apt-get install -y software-properties-common language-pack-en-base && \
 LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php && \
 apt-get update && \
-apt-get install -y --force-yes libsasl2-dev libcurl4-openssl-dev mcrypt php7.0-dev php7.0-cli php7.0-curl php7.0-fpm php7.0-intl php7.0-json php7.0-mcrypt php7.0-opcache php7.0-sqlite3 php-pear && \
+apt-get install -y --force-yes libsasl2-dev libcurl4-openssl-dev libpcre3-dev mcrypt php7.0-dev php7.0-cli php7.0-curl php7.0-fpm php7.0-intl php7.0-json php7.0-mcrypt php7.0-opcache php7.0-sqlite3 php-pear && \
 pecl install mongodb creates=/etc/php/7.0/cli/conf.d/20-mongo.ini && \
 ln -s /etc/php/mods-available/mongo.ini /etc/php/7.0/cli/conf.d/20-mongo.ini && \
 ln -s /etc/php/mods-available/mongo.ini /etc/php/7.0/fpm/conf.d/20-mongo.ini
 
-# 
-RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php/7.0/fpm/php.ini
+#phpInfo
+RUN touch /var/www/info.php
+RUN echo "<?php echo phpInfo(); ?>" > /var/www/info.php
 
-# Copy website Nginx config file
-COPY ./files/nginx-php7.conf /etc/nginx/sites-available/nginx-php7.conf
+#Networking
+EXPOSE 80 443
 
-## Install Nginx ##
-RUN nginx=stable && \
-add-apt-repository ppa:nginx/$nginx && \
-apt-get update && \
-apt-get install -y nginx && \
-rm -Rf /etc/nginx/sites-enabled/default && \
-ln -s /etc/nginx/sites-available/nginx-php7.conf /etc/nginx/sites-enabled/default
-###################
+#Nginx Conf
+COPY default /etc/nginx/sites-available/
+COPY default /etc/nginx/sites-enabled/
 
-## Clean up installation files ##
-RUN apt-get remove --purge -y software-properties-common && \
-apt-get autoremove -y && \
-apt-get clean && \
-apt-get autoclean && \
-echo -n > /var/lib/apt/extended_states && \
-rm -rf /var/lib/apt/lists/* && \
-rm -rf /usr/share/man/?? && \
-rm -rf /usr/share/man/??_*
+#Start sh
+ADD start.sh /start.sh
+RUN chmod +x /start.sh
 
-RUN rm -rf /var/www && \
-mkdir -p /var/www/html 
-#################################
+#Starting it
+ENTRYPOINT ["/start.sh"]
 
-## Start Install phpunit ##
-RUN curl -fsSL https://getcomposer.org/installer | php \
-    && mv composer.phar /usr/local/bin/composer \
-    && composer global require phpunit/phpunit ^6.2 --no-progress --no-scripts --no-interaction
-
-RUN pecl install xdebug \
-    && echo 'zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20151012/xdebug.so' > \
-        /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && php -m | grep xdebug
-
-ENV PATH /root/.composer/vendor/bin:$PATH
-## End Install phpunit ##
-
-
-EXPOSE 80
-
-ADD ./files/start.sh /start.sh
-RUN chmod +x /start.sh && \
-mkdir /run/php
-
-CMD /start.sh

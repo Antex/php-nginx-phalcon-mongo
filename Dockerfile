@@ -2,6 +2,8 @@ FROM ubuntu:16.04
 
 MAINTAINER Akkapong Kajornwongwattana<akkapong.kaj@ascendcorp.com>
 
+USER root
+
 #Install
 RUN apt-get update && apt-get install -y \
 git \

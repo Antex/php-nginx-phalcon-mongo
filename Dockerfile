@@ -69,7 +69,7 @@ RUN echo "extension=mongodb.so" >> /etc/php/7.0/cli/conf.d/30-phalcon.ini
 RUN composer global require phpunit/phpunit ^6.2 --no-progress --no-scripts --no-interaction
 
 RUN pecl install xdebug \
-    && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.0/fpm/conf.d/30-xdebug.ini
+    && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.0/fpm/conf.d/30-xdebug.ini \
     && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.0/cli/conf.d/30-xdebug.ini
 
 

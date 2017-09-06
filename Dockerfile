@@ -55,7 +55,7 @@ RUN apt-get update && \
 apt-get install -y software-properties-common language-pack-en-base && \
 LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php && \
 apt-get update && \
-apt-get install -y --allow mcrypt pkg-config libssl-dev openssl libsslcommon2-dev && \
+apt-get install -y --force-yes mcrypt pkg-config libssl-dev openssl libsslcommon2-dev && \
 pecl install mongodb 
 
 RUN echo "extension=mongodb.so" >> /etc/php/7.0/fpm/conf.d/30-phalcon.ini

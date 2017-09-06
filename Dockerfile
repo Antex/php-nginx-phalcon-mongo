@@ -26,6 +26,7 @@ php-memcache
 RUN apt-get install -y gcc make re2c libpcre3-dev php7.0-dev build-essential  php7.0-zip
 
 #Install composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN curl -sS http://getcomposer.org/installer | php
 RUN mv composer.phar /usr/local/bin/composer
 

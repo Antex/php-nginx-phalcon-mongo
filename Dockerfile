@@ -58,7 +58,7 @@ RUN composer require "phalcon/devtools" -d /usr/local/bin/
 RUN ln -s /usr/local/bin/vendor/phalcon/devtools/phalcon.php /usr/bin/phalcon
 
 # Install Mongodb
-RUN aapt-get install -y --force-yes php7.1-mbstring mcrypt pkg-config libssl-dev openssl libsslcommon2-dev && \
+RUN apt-get install -y --force-yes php7.1-mbstring mcrypt pkg-config libssl-dev openssl libsslcommon2-dev && \
 pecl install mongodb 
 
 RUN echo "extension=mongodb.so" >> /etc/php/7.1/fpm/conf.d/30-phalcon.ini

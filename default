@@ -10,7 +10,7 @@ server {
     server_name _;
     
     access_log /var/log/nginx/access.log;
-        error_log  /var/log/nginx/error.log;
+    error_log  /var/log/nginx/error.log;
 
     location / {
         # First attempt to serve request as file, then

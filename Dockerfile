@@ -4,26 +4,33 @@ MAINTAINER Akkapong Kajornwongwattana<akkapong.kaj@ascendcorp.com>
 
 USER root
 
+RUN apt-get update
+RUN apt-get install -y software-properties-common python-software-properties language-pack-en-base
+RUN LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php
+RUN apt-get update
+RUN apt-get install -y php7.1
+
 #Install
-RUN apt-get update && apt-get install -y \
+#RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
 git \
 nginx \
-php7.0-fpm \
-php7.0-cli \
-php7.0-gd \
+php7.1-fpm \
+php7.1-cli \
+php7.1-gd \
 curl \
 vim \
 wget \
-php7.0-mysql \
-php7.0-curl \
-php7.0-intl \
+php7.1-mysql \
+php7.1-curl \
+php7.1-intl \
 php-pear \
-php7.0-mcrypt \
+php7.1-mcrypt \
 php-memcache 
 
 
 #Packages for phalcon instalation   
-RUN apt-get install -y gcc make re2c libpcre3-dev php7.0-dev build-essential  php7.0-zip
+RUN apt-get install -y gcc make re2c libpcre3-dev php7.1-dev build-essential  php7.1-zip
 
 #Install composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -38,8 +45,8 @@ RUN git clone https://github.com/phalcon/cphalcon.git -b 3.2.x --single-branch
 
 #Building Phalcon
 RUN cd cphalcon && ~/.composer/vendor/bin/zephir build --backend=ZendEngine3
-RUN echo "extension=phalcon.so" >> /etc/php/7.0/fpm/conf.d/30-phalcon.ini
-RUN echo "extension=phalcon.so" >> /etc/php/7.0/cli/conf.d/30-phalcon.ini
+RUN echo "extension=phalcon.so" >> /etc/php/7.1/fpm/conf.d/30-phalcon.ini
+RUN echo "extension=phalcon.so" >> /etc/php/7.1/cli/conf.d/30-phalcon.ini
 
 #Re-Builging
 RUN ./cphalcon/ext/configure
@@ -51,15 +58,11 @@ RUN composer require "phalcon/devtools" -d /usr/local/bin/
 RUN ln -s /usr/local/bin/vendor/phalcon/devtools/phalcon.php /usr/bin/phalcon
 
 # Install Mongodb
-RUN apt-get update && \
-apt-get install -y software-properties-common language-pack-en-base && \
-LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php && \
-apt-get update && \
-apt-get install -y --force-yes php7.0-mbstring mcrypt pkg-config libssl-dev openssl libsslcommon2-dev && \
+RUN aapt-get install -y --force-yes php7.1-mbstring mcrypt pkg-config libssl-dev openssl libsslcommon2-dev && \
 pecl install mongodb 
 
-RUN echo "extension=mongodb.so" >> /etc/php/7.0/fpm/conf.d/30-phalcon.ini
-RUN echo "extension=mongodb.so" >> /etc/php/7.0/cli/conf.d/30-phalcon.ini
+RUN echo "extension=mongodb.so" >> /etc/php/7.1/fpm/conf.d/30-phalcon.ini
+RUN echo "extension=mongodb.so" >> /etc/php/7.1/cli/conf.d/30-phalcon.ini
 
 #phpInfo
 #RUN touch /var/www/info.php
@@ -69,8 +72,8 @@ RUN echo "extension=mongodb.so" >> /etc/php/7.0/cli/conf.d/30-phalcon.ini
 RUN composer global require phpunit/phpunit ^6.2 --no-progress --no-scripts --no-interaction
 
 RUN pecl install xdebug \
-    && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.0/fpm/conf.d/30-xdebug.ini \
-    && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.0/cli/conf.d/30-xdebug.ini
+    && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.1/fpm/conf.d/30-xdebug.ini \
+    && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.1/cli/conf.d/30-xdebug.ini
 
 
 #Networking
@@ -79,6 +82,10 @@ EXPOSE 80 443
 #Nginx Conf
 COPY default /etc/nginx/sites-available/
 COPY default /etc/nginx/sites-enabled/
+
+# Clean up installation files
+RUN rm -rf /cphalcon
+
 
 #Start sh
 #ADD start.sh /start.sh

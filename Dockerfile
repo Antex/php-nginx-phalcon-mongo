@@ -81,9 +81,9 @@ COPY default /etc/nginx/sites-available/
 COPY default /etc/nginx/sites-enabled/
 
 #Start sh
-ADD start.sh /start.sh
-RUN chmod +x /start.sh
+#ADD start.sh /start.sh
+#RUN chmod +x /start.sh
 
 #Starting it
-ENTRYPOINT ["/start.sh"]
+#ENTRYPOINT ["/start.sh"]
 

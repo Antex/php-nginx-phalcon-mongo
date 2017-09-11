@@ -88,9 +88,9 @@ RUN rm -rf /cphalcon
 
 
 #Start sh
-#ADD start.sh /start.sh
-#RUN chmod +x /start.sh
+ADD start.sh /start.sh
+RUN chmod +x /start.sh
 
 #Starting it
-#ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["/start.sh"]
 

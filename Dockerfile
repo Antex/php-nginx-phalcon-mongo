@@ -91,6 +91,9 @@ RUN rm -rf /cphalcon
 ADD start.sh /start.sh
 RUN chmod +x /start.sh
 
+RUN mkdir -p /var/www/html
+WORKDIR /var/www/html
+
 #Starting it
 ENTRYPOINT ["/start.sh"]
 

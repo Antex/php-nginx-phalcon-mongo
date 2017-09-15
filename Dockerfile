@@ -75,8 +75,8 @@ RUN wget https://phar.phpunit.de/phpunit-6.2.phar -O /usr/local/bin/phpunit && \
 #RUN composer global require phpunit/phpunit ^6.2 --no-progress --no-scripts --no-interaction
 
 RUN pecl install xdebug \
-    && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.1/fpm/conf.d/30-xdebug.ini \
-    && echo "zend_extension=/usr/lib/php/20151012/xdebug.so" > /etc/php/7.1/cli/conf.d/30-xdebug.ini
+    && echo "zend_extension=/usr/lib/php/20160303/xdebug.so" > /etc/php/7.1/fpm/conf.d/30-xdebug.ini \
+    && echo "zend_extension=/usr/lib/php/20160303/xdebug.so" > /etc/php/7.1/cli/conf.d/30-xdebug.ini
 
 
 #Networking

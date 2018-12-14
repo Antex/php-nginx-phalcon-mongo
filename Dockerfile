@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER Akkapong Kajornwongwattana<akkapong.kaj@ascendcorp.com>
+MAINTAINER Antex <antex.name@gmail.com>
 
 USER root
 
@@ -26,10 +26,12 @@ php7.1-curl \
 php7.1-intl \
 php-pear \
 php7.1-mcrypt \
-php-memcache 
+php-memcache \
+php7.1-xml \
+php7.1-mbstring
 
 
-#Packages for phalcon instalation   
+#Packages for phalcon instalation
 RUN apt-get install -y gcc make re2c libpcre3-dev php7.1-dev build-essential  php7.1-zip
 
 #Install composer
@@ -39,27 +41,36 @@ RUN mv composer.phar /usr/local/bin/composer
 
 #Install zephir
 RUN composer global require "phalcon/zephir:dev-master"
+RUN git clone git://github.com/phalcon/php-zephir-parser.git
+RUN cd php-zephir-parser && phpize && ./configure && make && make install
 
 #Install phalconphp with php7
-RUN git clone https://github.com/phalcon/cphalcon.git -b 3.2.x --single-branch
+RUN git clone https://github.com/phalcon/cphalcon.git -b 3.3.x --single-branch
+
+RUN echo "extension=zephir_parser.so" >> /etc/php/7.1/fpm/conf.d/31-zephir_parser.ini
+RUN echo "extension=zephir_parser.so" >> /etc/php/7.1/cli/conf.d/31-zephir_parser.ini
 
 #Building Phalcon
 RUN cd cphalcon && ~/.composer/vendor/bin/zephir build --backend=ZendEngine3
 RUN echo "extension=phalcon.so" >> /etc/php/7.1/fpm/conf.d/30-phalcon.ini
 RUN echo "extension=phalcon.so" >> /etc/php/7.1/cli/conf.d/30-phalcon.ini
 
+
 #Re-Builging
 RUN ./cphalcon/ext/configure
 RUN make
 RUN make install
 
-#Install phalcon dev tool 
+#Install phalcon dev tool
 RUN composer require "phalcon/devtools" -d /usr/local/bin/
 RUN ln -s /usr/local/bin/vendor/phalcon/devtools/phalcon.php /usr/bin/phalcon
 
+
+
 # Install Mongodb
+RUN apt-get install -y --force-yes mongodb-clients telnet iputils-ping nano mc htop 
 RUN apt-get install -y --force-yes php7.1-mbstring mcrypt pkg-config libssl-dev openssl libsslcommon2-dev && \
-pecl install mongodb 
+pecl install mongodb
 
 RUN echo "extension=mongodb.so" >> /etc/php/7.1/fpm/conf.d/30-phalcon.ini
 RUN echo "extension=mongodb.so" >> /etc/php/7.1/cli/conf.d/30-phalcon.ini
@@ -84,7 +95,8 @@ EXPOSE 80 443
 
 #Nginx Conf
 COPY default /etc/nginx/sites-available/
-COPY default /etc/nginx/sites-enabled/
+RUN rm /etc/nginx/sites-enabled/default
+RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 # Clean up installation files
 RUN rm -rf /cphalcon
@@ -94,9 +106,10 @@ RUN rm -rf /cphalcon
 ADD start.sh /start.sh
 RUN chmod +x /start.sh
 
-RUN mkdir -p /var/www/html
-WORKDIR /var/www/html
+RUN mkdir -p /var/www/
+WORKDIR /var/www/
+
+VOLUME /var/www/
 
 #Starting it
 ENTRYPOINT ["/start.sh"]
-
